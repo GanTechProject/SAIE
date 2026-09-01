@@ -1,0 +1,43 @@
+{
+  "name": "saie-windows",
+  "version": "2.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "vite --port 3000",
+    "server": "npx tsx server-node.ts",
+    "seed": "npx tsx seed-local.ts",
+    "build": "vite build",
+    "setup": "npx prisma generate && npx prisma db push --accept-data-loss && npx tsx seed-local.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.0",
+    "@prisma/client": "^6.19.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "hono": "^4.0.0",
+    "lucide-react": "^0.460.0",
+    "nodemailer": "^6.9.0",
+    "radix-ui": "^1.4.3",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "recharts": "^2.15.3",
+    "tailwind-merge": "^2.6.0",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.18",
+    "@types/node": "^22.0.0",
+    "@types/nodemailer": "^6.4.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "postcss": "^8.5.0",
+    "prisma": "^6.19.3",
+    "tailwindcss": "^4.1.18",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vite": "^5.4.0",
+    "vite-tsconfig-paths": "^4.3.0"
+  }
+}

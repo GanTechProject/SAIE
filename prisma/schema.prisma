@@ -1,0 +1,288 @@
+// SHOGO:CUSTOM-START prisma-header
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+// SHOGO:CUSTOM-END
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      String   @default("read_only")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  @@map("users")
+}
+
+model Source {
+  id           String    @id @default(cuid())
+  url          String
+  name         String
+  type         String
+  domain       String
+  industry     String?
+  priority     Int       @default(3)
+  tier         Int       @default(3)
+  schedule     String    @default("daily")
+  lastCrawl    DateTime? @map("last_crawl")
+  contentHash  String?   @map("content_hash")
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  crawlRuns    CrawlRun[]
+  versions     SourceVersion[]
+  evidence     Evidence[]
+  @@map("sources")
+}
+
+model CrawlRun {
+  id           String    @id @default(cuid())
+  sourceId     String    @map("source_id")
+  status       String    @default("pending")
+  startedAt    DateTime  @default(now()) @map("started_at")
+  completedAt  DateTime? @map("completed_at")
+  itemsFound   Int       @default(0) @map("items_found")
+  itemsChanged Int       @default(0) @map("items_changed")
+  errors       Int       @default(0)
+  duration     Int?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  source       Source    @relation(fields: [sourceId], references: [id])
+  versions     SourceVersion[]
+  @@map("crawl_runs")
+}
+
+model SourceVersion {
+  id              String    @id @default(cuid())
+  sourceId        String    @map("source_id")
+  crawlRunId      String?   @map("crawl_run_id")
+  contentHash     String    @map("content_hash")
+  url             String
+  title           String?
+  retrievedAt     DateTime  @default(now()) @map("retrieved_at")
+  contentLength   Int       @default(0) @map("content_length")
+  snapshotUri     String?   @map("snapshot_uri")
+  source          Source     @relation(fields: [sourceId], references: [id])
+  crawlRun        CrawlRun?  @relation(fields: [crawlRunId], references: [id])
+  changes         Change[]
+  @@map("source_versions")
+}
+
+model Change {
+  id            String    @id @default(cuid())
+  versionId     String    @map("version_id")
+  previousVersionId String? @map("previous_version_id")
+  type          String
+  title         String
+  summary       String
+  confidence    Float     @default(0.5)
+  classifiedAt  DateTime  @default(now()) @map("classified_at")
+  material      Boolean   @default(true)
+  version       SourceVersion @relation(fields: [versionId], references: [id])
+  findings      Finding[]
+  @@map("changes")
+}
+
+model Finding {
+  id            String    @id @default(cuid())
+  canonicalKey  String    @map("canonical_key")
+  title         String
+  description   String
+  status        String    @default("new")
+  domain        String?
+  industry      String?
+  firstDetected DateTime  @default(now()) @map("first_detected")
+  lastUpdated   DateTime  @default(now()) @map("last_updated")
+  confidence    Float     @default(0.5)
+  evidenceLevel String    @default("inferred") @map("evidence_level")
+  changes       Change[]
+  automations   Automation[]
+  evidence      Evidence[]
+  reportItems   ReportItem[]
+  @@map("findings")
+}
+
+model Automation {
+  id              String    @id @default(cuid())
+  findingId       String    @map("finding_id")
+  title           String
+  description     String
+  domain          String
+  industry        String?
+  automationType  String    @map("automation_type")
+  sapProducts     String    @map("sap_products")
+  businessProblem String    @map("business_problem")
+  currentProcess  String?   @map("current_process")
+  newCapability   String?   @map("new_capability")
+  approach        String?
+  humanInLoop     Boolean   @default(false) @map("human_in_loop")
+  benefits        String?
+  benefitSource   String    @default("inferred") @map("benefit_source")
+  status          String    @default("identified")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  finding         Finding   @relation(fields: [findingId], references: [id])
+  archNodes       ArchitectureNode[]
+  archEdges       ArchitectureEdge[]
+  opportunities   Opportunity[]
+  @@map("automations")
+}
+
+model ArchitectureNode {
+  id            String    @id @default(cuid())
+  automationId  String    @map("automation_id")
+  nodeType      String    @map("node_type")
+  name          String
+  description   String?
+  technology    String?
+  confirmed     Boolean   @default(false)
+  x             Float?
+  y             Float?
+  automation    Automation @relation(fields: [automationId], references: [id])
+  outgoingEdges ArchitectureEdge[] @relation("from_node")
+  incomingEdges ArchitectureEdge[] @relation("to_node")
+  @@map("architecture_nodes")
+}
+
+model ArchitectureEdge {
+  id            String    @id @default(cuid())
+  automationId  String    @map("automation_id")
+  fromNodeId    String    @map("from_node_id")
+  toNodeId      String    @map("to_node_id")
+  relation      String
+  label         String?
+  automation    Automation @relation(fields: [automationId], references: [id])
+  fromNode      ArchitectureNode @relation("from_node", fields: [fromNodeId], references: [id])
+  toNode        ArchitectureNode @relation("to_node", fields: [toNodeId], references: [id])
+  @@map("architecture_edges")
+}
+
+model Evidence {
+  id            String    @id @default(cuid())
+  findingId     String    @map("finding_id")
+  sourceId      String    @map("source_id")
+  locator       String
+  content       String
+  confidence    Float     @default(0.5)
+  authority     String?
+  corroboration Int       @default(1)
+  retrievedAt   DateTime  @default(now()) @map("retrieved_at")
+  confirmed     Boolean   @default(false)
+  finding       Finding   @relation(fields: [findingId], references: [id])
+  source        Source    @relation(fields: [sourceId], references: [id])
+  @@map("evidence")
+}
+
+model Opportunity {
+  id              String    @id @default(cuid())
+  automationId    String    @map("automation_id")
+  title           String
+  description     String
+  status          String    @default("identified")
+  category        String?
+  owner           String?
+  totalScore      Float     @default(0) @map("total_score")
+  businessValue   Float     @default(0) @map("business_value")
+  automationPotential Float @default(0) @map("automation_potential")
+  technicalFeasibility Float @default(0) @map("technical_feasibility")
+  reusability     Float     @default(0)
+  demand          Float     @default(0)
+  differentiation Float     @default(0)
+  cleanCoreRelevance Float @default(0) @map("clean_core_relevance")
+  complexityPenalty Float @default(0) @map("complexity_penalty")
+  scoreRationale  String?   @map("score_rationale")
+  overrideScore   Float?    @map("override_score")
+  overrideReason  String?   @map("override_reason")
+  validatedAt     DateTime? @map("validated_at")
+  validatedBy     String?   @map("validated_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  automation      Automation @relation(fields: [automationId], references: [id])
+  scores          Score[]
+  @@map("opportunities")
+}
+
+model Score {
+  id              String    @id @default(cuid())
+  opportunityId   String    @map("opportunity_id")
+  metric          String
+  value           Float
+  weight          Float
+  rationale       String?
+  opportunity     Opportunity @relation(fields: [opportunityId], references: [id])
+  @@map("scores")
+}
+
+model Report {
+  id            String    @id @default(cuid())
+  tenantId      String?   @map("tenant_id")
+  period        String
+  title         String
+  status        String    @default("draft")
+  sourcesScanned Int      @default(0) @map("sources_scanned")
+  changesFound   Int      @default(0) @map("changes_found")
+  automationsFound Int    @default(0) @map("automations_found")
+  opportunitiesFound Int  @default(0) @map("opportunities_found")
+  fileUri       String?   @map("file_uri")
+  generatedAt   DateTime? @map("generated_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  items         ReportItem[]
+  @@map("reports")
+}
+
+model ReportItem {
+  id          String    @id @default(cuid())
+  reportId    String    @map("report_id")
+  findingId   String    @map("finding_id")
+  rank        Int
+  included    Boolean   @default(true)
+  highlight   Boolean   @default(false)
+  report      Report    @relation(fields: [reportId], references: [id])
+  finding     Finding   @relation(fields: [findingId], references: [id])
+  @@map("report_items")
+}
+
+model Review {
+  id          String    @id @default(cuid())
+  entityType  String    @map("entity_type")
+  entityId    String    @map("entity_id")
+  reviewerId  String?   @map("reviewer_id")
+  decision    String
+  comments    String?
+  confidence  Float?
+  reviewedAt  DateTime  @default(now()) @map("reviewed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  @@map("reviews")
+}
+
+model AgentRun {
+  id           String    @id @default(cuid())
+  agentType    String    @map("agent_type")
+  model        String?
+  prompt       String?
+  status       String    @default("pending")
+  inputTokens  Int       @default(0) @map("input_tokens")
+  outputTokens Int       @default(0) @map("output_tokens")
+  cost         Float     @default(0)
+  duration     Int?
+  error        String?
+  startedAt    DateTime  @default(now()) @map("started_at")
+  completedAt  DateTime? @map("completed_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  @@map("agent_runs")
+}
+
+model AuditLog {
+  id          String    @id @default(cuid())
+  actor       String
+  action      String
+  entityType  String    @map("entity_type")
+  entityId    String    @map("entity_id")
+  details     String?
+  timestamp   DateTime  @default(now())
+  @@map("audit_log")
+}
