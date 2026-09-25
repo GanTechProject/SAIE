@@ -636,7 +636,7 @@ function getISTTime(): { day: number; hour: number; minute: number } {
   const now = new Date()
   const istOffset = 5.5 * 60 * 60 * 1000
   const istTime = new Date(now.getTime() + istOffset)
-  return { day: istTime.getDay(), hour: istTime.getHours(), minute: istTime.getMinutes() }
+  return { day: istTime.getUTCDay(), hour: istTime.getUTCHours(), minute: istTime.getUTCMinutes() }
 }
 
 let reportGeneratedThisWeek = false
