@@ -1077,7 +1077,7 @@ function DeliverySettings() {
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">Export Path</label>
             <input type="text" value={config.localExportPath} onChange={e => setConfig({ ...config, localExportPath: e.target.value })}
-              placeholder="C:\Users\DELL\Desktop\SAIE_Reports" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
+              placeholder="./reports" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" />
             <p className="text-xs text-slate-400 mt-1">Reports will be saved here every Saturday at 10 PM IST</p>
           </div>
           <div>

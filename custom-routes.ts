@@ -786,7 +786,7 @@ async function getDelivery() {
 const defaultDeliveryConfig = {
   smtpHost: 'smtp.gmail.com', smtpPort: 587, smtpUser: '', smtpPass: '',
   smtpFrom: '', smtpFromName: 'SAIE Intelligence Engine', emailRecipients: [],
-  localExportPath: 'C:\\Users\\DELL\\Desktop\\SAIE_Reports', exportFormats: ['html', 'json', 'csv'],
+  localExportPath: process.env.LOCAL_EXPORT_PATH || './reports', exportFormats: ['html', 'json', 'csv'],
   googleDriveEnabled: false, googleDriveClientId: '', googleDriveClientSecret: '',
   googleDriveRefreshToken: '', googleDriveFolderId: '', googleDriveSharedWith: [],
   scheduleDay: 'saturday', scheduleTime: '22:00', scheduleTimezone: 'Asia/Kolkata',

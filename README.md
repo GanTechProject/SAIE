@@ -1,4 +1,12 @@
-# SAIE — SAP Automation Intelligence Engine
+
+![License](https://img.shields.io/badge/License-Apache--2.0-blue.svg)
+![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)
+![React](https://img.shields.io/badge/React-18.3-61dafb)
+![Vite](https://img.shields.io/badge/Vite-5.4-646cff)
+![Hono](https://img.shields.io/badge/Hono-4.0-orange)
+![Prisma](https://img.shields.io/badge/Prisma-6.19-2D3748)
+![AI Multi-Provider](https://img.shields.io/badge/AI-Multi--Provider-purple)
 
 > **Enterprise-grade intelligence platform delivering automated analysis of SAP ecosystem developments, capabilities, and strategic automation opportunities.**
 

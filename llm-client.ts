@@ -191,12 +191,16 @@ async function callOpenAICompatible(
   }
   
   // OpenAI-compatible (OpenAI, Nvidia, Groq, DeepSeek, Ollama)
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  }
+  if (config.apiKey && !config.apiKey.startsWith('http')) {
+    headers['Authorization'] = `Bearer ${config.apiKey}`
+  }
+
   const response = await fetch(`${config.baseUrl}/chat/completions`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${config.apiKey}`,
-    },
+    headers,
     body: JSON.stringify({
       model: config.model,
       max_tokens: maxTokens,
@@ -240,7 +244,7 @@ async function callGemini(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: systemPrompt }] },
-        contents: [{ parts: [{ text: userPrompt }] }],
+        contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
         generationConfig: {
           maxOutputTokens: maxTokens,
           temperature: 0.3,

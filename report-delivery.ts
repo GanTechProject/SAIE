@@ -45,7 +45,7 @@ const DEFAULT_CONFIG: DeliveryConfig = {
   smtpFrom: '',
   smtpFromName: 'SAIE Intelligence Engine',
   emailRecipients: [],
-  localExportPath: 'C:\\Users\\DELL\\Desktop\\SAIE_Reports',
+  localExportPath: process.env.LOCAL_EXPORT_PATH || './reports',
   exportFormats: ['html', 'json', 'csv'],
   googleDriveEnabled: false,
   googleDriveClientId: '',

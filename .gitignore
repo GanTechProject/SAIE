@@ -70,6 +70,7 @@ archives/
 reports/
 *.html
 !public/*.html
+!index.html
 
 # Package lock (commit this)
 # package-lock.json
